@@ -1,0 +1,47 @@
+node co-nfs-ha-01 \
+	attributes standby="off"
+node co-nfs-ha-02 \
+	attributes standby="off"
+node co-nfs-ha-03
+primitive ClusterIP ocf:heartbeat:IPaddr2 \
+	params ip="172.16.21.155" nic="eth0" \
+	op monitor interval="5s" \
+	meta target-role="Started"
+primitive iscsi ocf:heartbeat:iscsi \
+	params portal="172.16.254.180:3260" target="iqn.2001-05.com.equallogic:0-8a0906-208f62d01-201001bd1ac50f9c-co-nfs-ha" \
+	op start interval="0" timeout="120s" \
+	op stop interval="0" timeout="120s" \
+	op monitor interval="5s" timeout="30s" \
+	meta target-role="Started"
+primitive iscsi_fs ocf:heartbeat:Filesystem \
+	params device="/dev/nfs/data" directory="/data/nfs" fstype="ext4" \
+	meta target-role="Started"
+primitive iscsi_lvm ocf:heartbeat:LVM \
+	params volgrpname="nfs" exclusive="yes" \
+	meta target-role="Started"
+primitive nfs_service lsb:nfs-kernel-server \
+	op monitor interval="5s" \
+	meta target-role="Started"
+primitive ping_gw ocf:pacemaker:ping \
+	params host_list="172.16.21.1" dampen="5s" \
+	op monitor interval="5" timeout="10" \
+	op start interval="0" timeout="10" \
+	op stop interval="0" timeout="10"
+clone iscsi_lun iscsi \
+	meta interleave="true"
+clone ping ping_gw \
+	meta interleave="true"
+location ping_gw_is_working iscsi_lvm \
+	rule $id="ping_gw_is_working-rule" -inf: not_defined pingd or pingd lte 0
+colocation nfs-cluster inf: ClusterIP iscsi_fs iscsi_lvm nfs_service
+order fs-after-lvm inf: iscsi_lvm iscsi_fs
+order ip-after-nfs inf: nfs_service ClusterIP
+order lvm-after-lun inf: iscsi_lun iscsi_lvm
+order nfs-after-fs inf: iscsi_fs nfs_service
+property $id="cib-bootstrap-options" \
+	dc-version="1.1.6-9971ebba4494012a93c03b40a2c58ec0eb60f50c" \
+	cluster-infrastructure="openais" \
+	stonith-enabled="false" \
+	no-quorum-policy="ignore" \
+	expected-quorum-votes="3" \
+	maintenance-mode="false"
