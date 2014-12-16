@@ -20,7 +20,7 @@ for x in session.xenapi.VM.get_all():
         
 
 for x in session.xenapi.SR.get_all():
-    if ("nfs" == session.xenapi.SR.get_type(x) or "lvm" == session.xenapi.SR.get_type(x)) :
+    if (session.xenapi.SR.get_type(x) in ["nfs", "lvm", "ext"]):
         print "SR : " + session.xenapi.SR.get_name_label(x) + " (" + session.xenapi.SR.get_type(x) + ")"
         for vdi in session.xenapi.SR.get_VDIs(x):
             vdi_name = session.xenapi.VDI.get_uuid(vdi) + " (" + session.xenapi.VDI.get_name_label(vdi) + ")"

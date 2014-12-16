@@ -34,7 +34,7 @@ from CSUtils import *
 config = {
     'management_server' : 'localhost',
     'hypervisor_type' : 'XenServer',
-    'primarystorage' : 'mccdxpl2_primary'
+    'primarystorage' : '192.168.56.5'
 }
   
 
@@ -191,7 +191,7 @@ print "Pod " + pod.name + " created"
 # Add secondary storage
 addSecondary = addSecondaryStorage.addSecondaryStorageCmd()
 addSecondary.zoneid = zone.id
-addSecondary.url    = "nfs://192.168.56.10/opt/storage/secondary"
+addSecondary.url    = "nfs://192.168.56.5/exports/secondary"
 try:
     secstor = apiclient.addSecondaryStorage(addSecondary)
 except urllib2.HTTPError, e:
@@ -199,37 +199,44 @@ except urllib2.HTTPError, e:
 print "Secondary storage added : " + secstor.name
 
 if (config.get('hypervisor_type') == "XenServer") :
-	# Add XenCluster
-	addCluster = addCluster.addClusterCmd()
-	addCluster.clustername = "XenCluster"
-	addCluster.clustertype = "CloudManaged"
-	addCluster.hypervisor  = "XenServer"
-	addCluster.podid       = pod.id
-	addCluster.zoneid      = zone.id
-	try:
-		resp = apiclient.addCluster(addCluster)
-		xencluster = resp[0]
-	except urllib2.HTTPError, e:
-	   print "addCluster Failed : " + str(e.msg)
-	print "Cluster " + xencluster.name + " created for " + xencluster.hypervisortype + " hypervisors"
+    # Add XenCluster
+    addCluster = addCluster.addClusterCmd()
+    addCluster.clustername = "XenCluster"
+    addCluster.clustertype = "CloudManaged"
+    addCluster.hypervisor  = "XenServer"
+    addCluster.podid       = pod.id
+    addCluster.zoneid      = zone.id
+    try:
+        resp = apiclient.addCluster(addCluster)
+        xencluster = resp[0]
+    except urllib2.HTTPError, e:
+       print "addCluster Failed : " + str(e.msg)
+    print "Cluster " + xencluster.name + " created for " + xencluster.hypervisortype + " hypervisors"
 
 
-	# Add Xen Host (Pool)
-	addXen = addHost.addHostCmd()
-	addXen.hypervisor = "XenServer"
-	addXen.zoneid     = zone.id
-	addXen.podid      = pod.id
-	addXen.clusterid  = xencluster.id
-	addXen.url        = "http://192.168.56.11"
-	addXen.username   = "root"
-	addXen.password   = "password"
-	try:
-		xenhosts = apiclient.addHost(addXen)
-	except urllib2.HTTPError, e:
-	   print "addCluster Failed : " + str(e.msg)
-	for xenbox in xenhosts:
-	   print "XenServer " + xenbox.name + " added to cluster " + xencluster.name
+    # Add Xen Host (Pool)
+    addXen = addHost.addHostCmd()
+    addXen.hypervisor = "XenServer"
+    addXen.zoneid     = zone.id
+    addXen.podid      = pod.id
+    addXen.clusterid  = xencluster.id
+    addXen.url        = "http://192.168.56.10"
+    addXen.username   = "root"
+    addXen.password   = "password"
+    try:
+        xenhosts = apiclient.addHost(addXen)
+    except urllib2.HTTPError, e:
+       print "addCluster Failed : " + str(e.msg)
+    for xenbox in xenhosts:
+       print "XenServer " + xenbox.name + " added to cluster " + xencluster.name
 
+    #createPrimary = createStoragePool.createStoragePoolCmd()
+    #createPrimary.name = 'Primary Storage'
+    #createPrimary.url = 'nfs://192.168.56.5/exports/primary'
+    #createPrimary.zoneid = zone.id
+    #createPrimary.podid = pod.id
+    #createPrimary.clusterid = xencluster.id
+    #apiclient.createStoragePool(createPrimary)
 
 listVR = listVirtualRouterElements.listVirtualRouterElementsCmd()
 confVR = configureVirtualRouterElement.configureVirtualRouterElementCmd()
