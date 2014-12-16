@@ -1,2 +1,3 @@
-common/,management/*
+common/management/tmp
+common/management/cookbooks
 .vagrant/*
