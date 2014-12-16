@@ -3,10 +3,11 @@
 # --------------------------------------------------------------------------------- #
 # Stuff you may well have to change
 # --------------------------------------------------------------------------------- #
-export CLOUDSTACK=/Users/isoutham/repo/cloudstack
+export CLOUDSTACK=/Users/daan/cloudstack/cloudstack
 export INSTALL_VM=cloud-install-sys-tmplt
 export SCRIPT=${CLOUDSTACK}/scripts/storage/secondary
-export XENTEMPLATE=systemvm64template-systemvm-persistent-config-4.5.0.69-xen.vhd.bz2
+export XENTEMPLATE=systemvm64template-4.4.2-SBP-2-xen.vhd.bz2
+#export XENTEMPLATE=systemvm64template-systemvm-persistent-config-4.5.0.69-xen.vhd.bz2
 #export XENTEMPLATE=systemvm64template-4.4-2014-12-02-xen.vhd.bz2
 #export XENTEMPLATE=systemvmtemplate-master-4.6.0-xen.vhd.bz2
 
@@ -87,9 +88,9 @@ linuxImage() {
 	then
 		echo Installing linux image template 5
 	  scp -P ${PORT} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${ID} ${SCRIPT_LOCATION}/systemvm/${LINUX_TMPL} ${SCRIPT_LOCATION}/systemvm/template.properties ${USER}@${HN}:
-		vagrant ssh management -c "sudo mkdir -p /export/secondary/template/tmpl/1/5"
-		vagrant ssh management -c "sudo cp ${LINUX_TMPL} /export/secondary/template/tmpl/1/5/ce5b212e-215a-3461-94fb-814a635b2215.vhd"
-		vagrant ssh management -c "sudo cp template.properties ${SHARED}/secondary/template/tmpl/1/5"
+		vagrant ssh management -c "sudo mkdir -p /exports/secondary/template/tmpl/1/5"
+		vagrant ssh management -c "sudo cp ${LINUX_TMPL} /exports/secondary/template/tmpl/1/5/ce5b212e-215a-3461-94fb-814a635b2215.vhd"
+		vagrant ssh management -c "sudo cp template.properties /exports/secondary/template/tmpl/1/5"
 	fi
 }
 
@@ -128,11 +129,11 @@ sed -i "" -e 's/^DBHOST=.*/DBHOST='${DEVCLOUD}'/' build/replace.properties
 echo Update the database
 
 vagrant ssh management -c "mysql -u cloud --password=cloud -e 'drop database cloud;'"
-cd ../cloudstack
+cd ${CLOUDSTACK}
 mvn -P developer ${NOREDIST} -Ddeploydb -pl developer 
 
 
-cd ../cloudstack
+cd ${CLOUDSTACK}
 rm -f vmops.log
 rm -f jetty-console.out
 if [ ! -z "${BUILD}" ]
@@ -142,7 +143,7 @@ if [ ! -z "${BUILD}" ]
 fi
 
 echo Start CloudStack
-cd ../cloudstack
+cd ${CLOUDSTACK}
 mvn -P systemvm ${NOREDIST} -pl :cloud-client-ui jetty:run > jetty-console.out 2>&1 &
 SERVER_PID=$!
 
