@@ -21,7 +21,7 @@ export HYPERVISOR=192.168.56.10
 export HYPERVISOR_VBOX=xenserver
 export SECSTORE=/exports/secondary
 
-args=`getopt npbi $*`
+args=`getopt npbit $*`
 if [ $? != 0 ] 
 then
   echo $0 [-p] [-b]
@@ -49,6 +49,9 @@ for i do
   -i)
     INSTALLSVM="1"
     ;;
+  -t)
+    INSTALLTINY="1"
+    ;;
   esac
 done
 
@@ -72,18 +75,22 @@ systemvm() {
 
 # This does not yet woprk without manual intervention
 linuxImage() {
+	TF=/tmp/$$
+	vagrant ssh-config management > ${TF}
+	PORT=$(cat ${TF} | grep Port | awk '{print $2;}')
+	USER=$(cat ${TF} | grep "User " | awk '{print $2;}')
+	HN=$(cat ${TF} | grep HostName | awk '{print $2;}')
+	ID=$(cat ${TF} | grep IdentityFile | awk '{print $2;}')
+	rm ${TF}
 	echo Install Tiny Linux
-	cd $OLDDIR
-	if [ -f systemvm/${LINUX_TMPL} ]
+	if [ -f ${SCRIPT_LOCATION}/systemvm/${LINUX_TMPL} ]
 	then
 		echo Installing linux image template 5
-		sudo mkdir -p ${SHARED}/secondary/template/tmpl/1/5
-		echo sudo mkdir -p ${SHARED}/secondary/template/tmpl/1/5
-		sudo cp systemvm/${LINUX_TMPL} ${SHARED}/secondary/template/tmpl/1/5/ce5b212e-215a-3461-94fb-814a635b2215.vhd
-		sudo cp systemvm/template.properties ${SHARED}/secondary/template/tmpl/1/5
+	  scp -P ${PORT} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${ID} ${SCRIPT_LOCATION}/systemvm/${LINUX_TMPL} ${SCRIPT_LOCATION}/systemvm/template.properties ${USER}@${HN}:
+		vagrant ssh management -c "sudo mkdir -p /export/secondary/template/tmpl/1/5"
+		vagrant ssh management -c "sudo cp ${LINUX_TMPL} /export/secondary/template/tmpl/1/5/ce5b212e-215a-3461-94fb-814a635b2215.vhd"
+		vagrant ssh -c "sudo cp template.properties ${SHARED}/secondary/template/tmpl/1/5"
 	fi
-	# Workaround for people with spaces in their group name
-	sudo chgrp -R nobody ${SHARED}/
 }
 
 vagrant up ${DEVCLOUD_VBOX}
@@ -103,12 +110,13 @@ fi
 if [  -n "${INSTALLSVM}" ]
 then
 	systemvm
+	exit
 fi
 
-#FIXME!!
 if [  -n "${INSTALLTINY}" ]
 then
 	linuxImage
+	exit
 fi
 
 # Kill any old cloudstack instances

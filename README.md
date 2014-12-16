@@ -20,6 +20,12 @@ Usage
 
 No Parameters
 
+Install systemvm 
+sh ./runtests.sh -i
+
+Install tiny linux template 
+sh ./runtests.sh -t
+
 sh ./runtests.sh 
 This will start up the virtual machines
 Run cloudstack
