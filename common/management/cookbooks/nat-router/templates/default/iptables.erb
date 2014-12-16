@@ -1,0 +1,14 @@
+*filter
+:INPUT ACCEPT
+:FORWARD ACCEPT
+:OUTPUT ACCEPT
+<% @node['iptables']['lans'].each_with_index do |interface, index| %>
+    -A FORWARD -i <%= interface %> -o <%= @node['iptables']['wan'] %> -j ACCEPT
+<% end %>
+COMMIT
+*nat
+:PREROUTING ACCEPT
+:POSTROUTING ACCEPT
+:OUTPUT ACCEPT
+-A POSTROUTING -o <%= @node['iptables']['wan'] %> -j MASQUERADE
+COMMIT
