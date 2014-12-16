@@ -89,7 +89,7 @@ linuxImage() {
 	  scp -P ${PORT} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${ID} ${SCRIPT_LOCATION}/systemvm/${LINUX_TMPL} ${SCRIPT_LOCATION}/systemvm/template.properties ${USER}@${HN}:
 		vagrant ssh management -c "sudo mkdir -p /export/secondary/template/tmpl/1/5"
 		vagrant ssh management -c "sudo cp ${LINUX_TMPL} /export/secondary/template/tmpl/1/5/ce5b212e-215a-3461-94fb-814a635b2215.vhd"
-		vagrant ssh -c "sudo cp template.properties ${SHARED}/secondary/template/tmpl/1/5"
+		vagrant ssh management -c "sudo cp template.properties ${SHARED}/secondary/template/tmpl/1/5"
 	fi
 }
 
