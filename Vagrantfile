@@ -90,7 +90,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     management.omnibus.chef_version = "11.16.0"
 
-    management.librarian_chef.cheffile_dir = 'common/management'
+    #management.librarian_chef.cheffile_dir = 'common/management'
 
     management.vm.provision 'chef_solo' do |chef|
       chef.cookbooks_path = ['common/management/cookbooks']
