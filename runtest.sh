@@ -3,10 +3,11 @@
 # --------------------------------------------------------------------------------- #
 # Stuff you may well have to change
 # --------------------------------------------------------------------------------- #
-export CLOUDSTACK=/Users/daan/cloudstack/cloudstack
+export CLOUDSTACK=/Users/isoutham/repo/cloudstack
 export INSTALL_VM=cloud-install-sys-tmplt
 export SCRIPT=${CLOUDSTACK}/scripts/storage/secondary
-export XENTEMPLATE=systemvm64template-4.4.2-SBP-2-xen.vhd.bz2
+#export XENTEMPLATE=systemvmtemplate-master-4.6.0-xen.vhd.bz2
+export XENTEMPLATE=systemvm64template-systemvm-persistent-config-4.5.0.71-xen.vhd.bz2
 #export XENTEMPLATE=systemvm64template-systemvm-persistent-config-4.5.0.69-xen.vhd.bz2
 #export XENTEMPLATE=systemvm64template-4.4-2014-12-02-xen.vhd.bz2
 #export XENTEMPLATE=systemvmtemplate-master-4.6.0-xen.vhd.bz2
@@ -119,6 +120,7 @@ then
 	linuxImage
 	exit
 fi
+sudo touch /tmp/a
 
 # Kill any old cloudstack instances
 ps -ef | grep java|grep systemvm| awk '{print $2;}' | xargs kill
@@ -128,11 +130,13 @@ sed -i "" -e 's/^DBHOST=.*/DBHOST='${DEVCLOUD}'/' build/replace.properties
 
 echo Update the database
 
+sudo touch /tmp/a
 vagrant ssh management -c "mysql -u cloud --password=cloud -e 'drop database cloud;'"
 cd ${CLOUDSTACK}
 mvn -P developer ${NOREDIST} -Ddeploydb -pl developer 
 
 
+sudo touch /tmp/a
 cd ${CLOUDSTACK}
 rm -f vmops.log
 rm -f jetty-console.out
@@ -142,13 +146,17 @@ if [ ! -z "${BUILD}" ]
   mvn -T 2C -Psystemvm ${NOREDIST} clean install
 fi
 
+sudo touch /tmp/a
+echo Copy developer-prefill.sql
+cp ${SCRIPT_LOCATION}/developer-prefill.sql ${CLOUDSTACK}/developer/developer-prefill.sql.override
+
 echo Start CloudStack
 cd ${CLOUDSTACK}
 mvn -P systemvm ${NOREDIST} -pl :cloud-client-ui jetty:run > jetty-console.out 2>&1 &
 SERVER_PID=$!
 
 echo Clean the xenserver
-sleep 15
+sudo touch /tmp/a
 python "${SCRIPT_LOCATION}"/xapi_cleanup_xenservers.py http://${HYPERVISOR} root password
 
 # Check for initialization of the management server
@@ -161,7 +169,7 @@ while [ "$COUNTER" -lt 34 ] ; do
     COUNTER=$(($COUNTER+1))
 done
 
-
+sudo touch /tmp/a
 if grep -q 'Management server node 127.0.0.1 is up' jetty-console.out ; then
    echo Started OK
    sleep 20
