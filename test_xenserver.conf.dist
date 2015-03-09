@@ -1,0 +1,21 @@
+# Config for test_xenserver
+# ----------------------------------
+# Vagrant
+# type=vagrant
+# Name of host in vagrant (DEFAULT: xenserver)
+# vaghost=xenserver
+# ----------------------------------
+# SSH
+# type=ssh
+# host=127.0.0.1
+# port=2200
+# identity=/Users/isoutham/repo/cs-functional-test/.vagrant/machines/xenserver/virtualbox/private_key
+# user=vagrant
+# ----------------------------------
+[General]
+type=vagrant
+vaghost=xenserver
+host=127.0.0.1
+port=2200
+identity=/Users/isoutham/repo/cs-functional-test/.vagrant/machines/xenserver/virtualbox/private_key
+user=vagrant
