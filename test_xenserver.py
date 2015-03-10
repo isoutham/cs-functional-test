@@ -132,8 +132,8 @@ class Communicate():
         except TypeError:
             print "Could not parse configuration file %s" % config
             sys.exit(1)
-        except IOError:
-            print "Could not open configuration file %s" % config
+        except IOError as e:
+            print "Could not open configuration file %s (%s %s)" % (conf, e.errno, e.strerror)
             sys.exit(1)
         else:
             type = self.config.get("General", "type")
@@ -156,8 +156,8 @@ class Communicate():
             env.hosts = self.config.get("General", "host")
             env.port = self.config.get("General", "port")
             env.key_filename = self.config.get("General", "identity")
-        except ConfigParser.NoOptionError:
-            print "Failed to parse the config file"
+        except ConfigParser.NoOptionError as e:
+            print "Could not parse configuration file (%s)" % e
             sys.exit()
         else:
             env.shell = "/bin/bash -c"
@@ -440,6 +440,7 @@ class RedVPCRouter():
     serviceOffering = "tinyOffering"
 
     def __init__(self, l, options):
+        self.options = options
         self.log = l
         utils = CSUtils()
         conn = utils.getConnection()

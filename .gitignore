@@ -1,2 +1,6 @@
 common/management/tmp
 .vagrant/*
+*.swp
+*.swo
+systemvm/*
+test_xenserver.conf

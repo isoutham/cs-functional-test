@@ -16,7 +16,8 @@ export XENTEMPLATE=systemvm64template-systemvm-persistent-config-4.6.0.88-xen.vh
 # --------------------------------------------------------------------------------- #
 # The rest
 # --------------------------------------------------------------------------------- #
-export MAVEN_OPTS="-Xmx2048m -XX:MaxPermSize=512m"
+#export MAVEN_OPTS="-Xmx2048m -XX:MaxPermSize=512m"
+MAVEN_OPTS='-Xmx2048m -XX:MaxPermSize=1024m -Xdebug -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n'
 export LINUX_TMPL=ttylinux_pv.vhd
 export DEVCLOUD=192.168.56.5
 export DEVCLOUD_VBOX=management
